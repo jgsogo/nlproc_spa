@@ -46,43 +46,59 @@ class NLTKNgramTagger(POSTagger):
     def _remove_mwe(cls, sentences):
         nomwe = []
         for i in sentences:
-            nomwe = " ".join([j[0].replace("_"," ") for j in i])
-            nomwe.append(nomwe.split())
+            nomwe.append([j[0].replace("_"," ") for j in i])
         return nomwe
 
     def load(self, train=True):
         log.info("Load tagger {!r}".format(self.id))
-        try:
-            for i in range(1, self.ngrams+1):
-                filename = self.get_ngram_tagger_filename(self.id, self.use_mwe, i)
-                log.debug(" - load tagger (ngram={!r}) from filename {!r}".format(i, filename))
+
+        self.tagger = None
+        for i in range(1, self.ngrams+1):
+            filename = self.get_ngram_tagger_filename(self.id, self.use_mwe, i)
+            log.debug(" - load tagger (ngram={!r}) from filename {!r}".format(i, filename))
+
+            try:
                 self.tagger = self._load(filename)
 
-        except IOError as e:
-            if train:
-                log.warn(" - file failed to load, train tagger")
-                self.train(save=True)
-            else:
-                raise e
+            except IOError as e:
+                if train:
+                    log.warn(" - file failed to load, train tagger")
+                    self.tagger = self._train(ngrams=i, backoff=self.tagger, save=True)
+                else:
+                    raise e
+
+    def _train(self, ngrams, backoff, save=True):
+        log.debug(" - train tagger (ngram={!r})".format(ngrams))
+        tagger = NgramTagger(ngrams, self.tagged_sentences, backoff=backoff)
+
+        if save:
+            filename = self.get_ngram_tagger_filename(self.id, self.use_mwe, ngrams)
+            log.debug(" - save tagger (ngram={!r}) to filename {!r}".format(ngrams, filename))
+            self._save(filename, tagger)
+        return tagger
+
+    @property
+    def tagged_sentences(self):
+        if not hasattr(self, '_tagged_sentences'):
+            log.info("Cache tagged_sentences with mwe={!r}".format(self.use_mwe))
+            tagged_sentences = self.get_tagged_sentences()
+
+            if not self.use_mwe:
+                log.debug(" - remove mwe from tagged_sentences")
+                nomwe = self._remove_mwe(tagged_sentences)
+                log.debug(" - pos_tag sentences without mwe")
+                tagged_sentences = self.__class__.pos_tag(nomwe, use_mwe=False, ngrams=1)
+
+            setattr(self, '_tagged_sentences', tagged_sentences)
+
+        return getattr(self, '_tagged_sentences')
 
     def train(self, save=True):
         log.info("Train tagger {!r} (use_mwe={!r}) up to ngram={!r}".format(self.id, self.use_mwe, self.ngrams))
-        tagged_sentences = self.get_tagged_sentences()
-
-        if not self.use_mwe:
-            log.debug(" - remove mwe from tagged_sentences")
-            nomwe = self._remove_mwe(tagged_sentences)
-            log.debug(" - pos_tag sentences without mwe")
-            tagged_sentences = self.__class__().pos_tag(nomwe, use_mwe=False, ngrams=1)  # TODO: Get this class
 
         backoff = None
         for i in range(1, self.ngrams+1):
-            log.debug(" - train tagger (ngram={!r})".format(i))
-            tagger = NgramTagger(i, tagged_sentences, backoff=backoff)
-            if save:
-                filename = self.get_ngram_tagger_filename(self.id, self.use_mwe, i)
-                log.debug(" - save tagger (ngram={!r}) to filename {!r}".format(i, filename))
-                self._save(filename, tagger)
+            tagger = self._train(ngrams=i, backoff=backoff, save=save)
             backoff = tagger
 
         self.tagger = tagger
@@ -129,7 +145,8 @@ postagger_register("CESSTagger-nomwe-3grams")(cess_tagger(use_mwe=False, ngrams=
 
 
 if __name__ == '__main__':
-    formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+    #formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)7s - %(message)s')
+    formatter = logging.Formatter('%(asctime)s - %(levelname)7s - %(message)s')
     ch = logging.StreamHandler()
     ch.setFormatter(formatter)
     log.addHandler(ch)
@@ -138,8 +155,16 @@ if __name__ == '__main__':
     log.setLevel(logging.DEBUG)
 
     from nlproc.pos_tagger import postagger_factory
-    tagger = postagger_factory("CESSTagger-mwe-3gram")()
 
-    tagger.load(train=True)
-    tags = tagger.tag(["La", "casa", "es", "azul"])
-    print(tags)
+    cess_mwe_2grams = postagger_factory("CESSTagger-mwe-2grams")()
+    cess_mwe_2grams.load(train=True)
+    print(cess_mwe_2grams.tag(["La", "casa", "es", "azul"]))
+
+    cess_mwe_1grams = postagger_factory("CESSTagger-mwe-1grams")()
+    cess_mwe_1grams.load(train=True)
+    print(cess_mwe_1grams.tag(["La", "casa", "es", "azul"]))
+
+    cess_mwe_3grams = postagger_factory("CESSTagger-mwe-3grams")()
+    cess_mwe_3grams.load(train=True)
+    print(cess_mwe_3grams.tag(["La", "casa", "es", "azul"]))
+

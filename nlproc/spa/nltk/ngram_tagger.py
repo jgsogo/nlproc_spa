@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+
 import os
 import logging
 import pickle
@@ -8,22 +9,28 @@ import pickle
 from nltk import UnigramTagger, BigramTagger, TrigramTagger, NgramTagger
 from nltk.corpus import cess_esp
 
+from nlproc.pos_tagger import postagger_register, POSTagger
+
 log = logging.getLogger(__name__)
 
 
-class BaseTagger(object):
+class NLTKNgramTagger(POSTagger):
     id = None
     ngrams = 2
 
     def __init__(self, id, use_mwe=True, ngrams=2):
+        super(NLTKNgramTagger, self).__init__()
         self.id = id
         self.use_mwe = use_mwe  # Whether to use or not multiword expressions
         self.ngrams = ngrams
 
     def get_ngram_tagger_filename(self, id, use_mwe, ngram):
         mwe = "" if not use_mwe else "_mwe"
-        ngram_str = "{}-gram".format(ngram)
+        ngram_str = "{}grams".format(ngram)
         return "{id}{mwe}_{ngram}.tagger".format(id=id, mwe=mwe, ngram=ngram_str)
+
+    def get_tagged_sentences(self):
+        raise NotImplementedError("NLTKNgramTagger::get_tagged_sentences")
 
     @classmethod
     def _load(cls, filename):
@@ -54,18 +61,19 @@ class BaseTagger(object):
         except IOError as e:
             if train:
                 log.warn(" - file failed to load, train tagger")
-                self.train(tagged_sentences=None, save=True)
+                self.train(save=True)
             else:
                 raise e
 
-    def train(self, tagged_sentences, save=True):
+    def train(self, save=True):
         log.info("Train tagger {!r} (use_mwe={!r}) up to ngram={!r}".format(self.id, self.use_mwe, self.ngrams))
+        tagged_sentences = self.get_tagged_sentences()
 
         if not self.use_mwe:
             log.debug(" - remove mwe from tagged_sentences")
             nomwe = self._remove_mwe(tagged_sentences)
             log.debug(" - pos_tag sentences without mwe")
-            tagged_sentences = CESSTagger.pos_tag(nomwe, use_mwe=False, ngrams=1)  # TODO: Get this class
+            tagged_sentences = self.__class__().pos_tag(nomwe, use_mwe=False, ngrams=1)  # TODO: Get this class
 
         backoff = None
         for i in range(1, self.ngrams+1):
@@ -81,13 +89,13 @@ class BaseTagger(object):
 
     @classmethod
     def pos_tag(cls, tokens, use_mwe=True, ngrams=2):
-        item = cls(BaseTagger.id, use_mwe=use_mwe, ngrams=ngrams)
+        item = cls(NLTKNgramTagger.id, use_mwe=use_mwe, ngrams=ngrams)
         item.load()
         return item.tag(tokens)
 
     @classmethod
     def pos_tag_sents(cls, sentences, use_mwe=True, ngrams=2):
-        item = cls(BaseTagger.id, use_mwe=use_mwe, ngrams=ngrams)
+        item = cls(NLTKNgramTagger.id, use_mwe=use_mwe, ngrams=ngrams)
         item.load()
         return item.tag_sents(sentences)
 
@@ -98,16 +106,26 @@ class BaseTagger(object):
         return self.tagger.tag_sents(sents)
 
 
-class CESSTagger(BaseTagger):
+def cess_tagger(use_mwe, ngrams):
 
-    def __init__(self, use_mwe=True, ngrams=2):
-        super(CESSTagger, self).__init__(id='cess', use_mwe=True, ngrams=ngrams)
+    class CESSTagger(NLTKNgramTagger):
 
-    def train(self, tagged_sentences=None, save=True):
-        assert(tagged_sentences==None), "Do not pass arguments to this method. Attribute is here only to match parent function"
-        # Load CESS corpus.
-        cess_sents = cess_esp.tagged_sents()
-        super(CESSTagger, self).train(tagged_sentences=cess_sents, save=save)
+        def __init__(self):
+            super(CESSTagger, self).__init__(id='cess', use_mwe=use_mwe, ngrams=ngrams)
+
+        def get_tagged_sentences(self):
+            return cess_esp.tagged_sents()
+
+    return CESSTagger
+
+
+postagger_register("CESSTagger-mwe-1grams")(cess_tagger(use_mwe=True, ngrams=1))
+postagger_register("CESSTagger-mwe-2grams")(cess_tagger(use_mwe=True, ngrams=2))
+postagger_register("CESSTagger-mwe-3grams")(cess_tagger(use_mwe=True, ngrams=3))
+
+postagger_register("CESSTagger-nomwe-1grams")(cess_tagger(use_mwe=False, ngrams=1))
+postagger_register("CESSTagger-nomwe-2grams")(cess_tagger(use_mwe=False, ngrams=2))
+postagger_register("CESSTagger-nomwe-3grams")(cess_tagger(use_mwe=False, ngrams=3))
 
 
 if __name__ == '__main__':
@@ -119,7 +137,9 @@ if __name__ == '__main__':
     ch.setLevel(logging.DEBUG)
     log.setLevel(logging.DEBUG)
 
-    cess = CESSTagger(use_mwe=True, ngrams=5)
-    cess.load(train=True)
-    tags = cess.tag(["La", "casa", "es", "azul"])
+    from nlproc.pos_tagger import postagger_factory
+    tagger = postagger_factory("CESSTagger-mwe-3gram")()
+
+    tagger.load(train=True)
+    tags = tagger.tag(["La", "casa", "es", "azul"])
     print(tags)

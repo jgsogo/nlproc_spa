@@ -15,15 +15,20 @@ _LOG_LEVEL_STRINGS = ['CRITICAL', 'ERROR', 'WARNING', 'INFO', 'DEBUG']
 
 def evaluate(tagger, dataset):
     sents = dataset.tagged_sents
-
+    results = []
     for sent in sents:
         test = Dataset.untag(sent)
         ret = tagger.tag(test)
 
+        matches = 0
+        evaluated = 0
         for input, output in zip(sent, ret):
             assert input[0] == output[0], "Word has to be the same"
-            print("{} <> {}".format(input, output))
-    return 0
+            evaluated += 1 if output[1] else 0
+            if output[1]:
+                matches += 1 if input[1] == output[1] else 0
+        results.append((evaluated, matches, len(sent)))
+    return results
 
 
 def _log_level_string_to_int(log_level_string):
@@ -68,21 +73,16 @@ if __name__ == '__main__':
         for dataset_class in datasets:
             dataset = UniversalPOSDataset(dataset_class)()
 
-            log.info("Evaluate tagger {!r} over dataset {!r}".format(tagger, dataset))
+            print("Evaluate tagger '{}' over dataset '{}'".format(tagger, dataset))
 
             start = time.time()
             metrics = evaluate(tagger, dataset)
             end = time.time()
 
-            log.debug(" - metrics: {}".format(metrics))
-            log.debug(" - elapsed_time: {}".format(end))
+            aggregated = [sum(x) for x in zip(*metrics)]
+            print(" - metrics: {} => {:.4f}% evaluated, {:.4f}% match".format(aggregated, aggregated[0]/aggregated[2], aggregated[1]/aggregated[2]))
+            print(" - elapsed_time: {}".format(end))
 
-    """
-    for tagger in taggers:
-        print(tagger)
+            log.warning("Missing UniversalPOS in dataset '{}': {}".format(dataset, ', '.join(dataset.missing)))
+        log.warning("Missing UniversalPOS in tagger '{}': {}".format(tagger, ', '.join(tagger.missing)))
 
-    for dataset in datasets:
-        data = dataset()
-        print("{}: {} tagged_sentences".format(data._id_, len(data.tagged_sents)))
-        print("{}: {} tagged_sentences".format(data._id_, len(data.tagged_sents)))
-    """

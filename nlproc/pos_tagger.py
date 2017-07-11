@@ -12,6 +12,9 @@ class POSTagger(object):
         self.lang = lang
         assert self.lang == 'spa', "Only spanish language for now"
 
+    def __str__(self):
+        return self._id_
+
     def load(self, train=True):
         raise NotImplementedError()
 

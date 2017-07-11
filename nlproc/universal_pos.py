@@ -18,6 +18,7 @@ def load(map_file):
 
 
 class UniversalPOSMixin(object):
+    missing = set()
 
     def __init__(self, tagset, *args, **kwargs):
         super(UniversalPOSMixin, self).__init__(*args, **kwargs)
@@ -27,8 +28,9 @@ class UniversalPOSMixin(object):
         try:
             return self.mapping[tag]
         except KeyError as e:
-            log.error("Tag {!r} not found in UniversalPOS mapping for {!r}".format(tag, self.tagset))
-            return ''
+            self.missing.add(tag)
+            # log.error("Tag {!r} not found in UniversalPOS mapping for {!r}".format(tag, self.tagset))
+            return None
 
 
 def UniversalPOSTagger(cls):

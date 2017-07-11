@@ -8,6 +8,9 @@ class Dataset:
     _id_ = None
     _datasets_ = {}
 
+    def __str__(self):
+        return self._id_
+
     @property
     def tagged_sents(self):
         raise NotImplementedError()

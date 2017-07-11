@@ -1,0 +1,3 @@
+[submodule "universal_pos_tags"]
+	path = universal_pos_tags
+	url = https://github.com/slavpetrov/universal-pos-tags.git

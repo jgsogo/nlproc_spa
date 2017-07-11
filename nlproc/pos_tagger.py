@@ -1,6 +1,8 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+import re
+
 
 class POSTagger(object):
     _id_ = None
@@ -30,6 +32,12 @@ class POSTagger(object):
             raise ValueError(class_name, "Unknown entity")
 
     @classmethod
+    def match(cls, regex_expr):
+        for key, item in cls._classes_.items():
+            if re.match(regex_expr, key):
+                yield item
+
+    @classmethod
     def register(cls, class_name):
         def decorator(subclass):
             cls._classes_[class_name] = subclass
@@ -39,4 +47,5 @@ class POSTagger(object):
 
 
 postagger_factory = POSTagger.factory
+postagger_match = POSTagger.match
 postagger_register = POSTagger.register

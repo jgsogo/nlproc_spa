@@ -62,7 +62,7 @@ class NLTKNgramTagger(POSTagger):
 
             except IOError as e:
                 if train:
-                    log.warn(" - file failed to load, train tagger")
+                    log.debug(" - file failed to load, train tagger")
                     self.tagger = self._train(ngrams=i, backoff=self.tagger, save=True)
                 else:
                     raise e
@@ -105,13 +105,13 @@ class NLTKNgramTagger(POSTagger):
 
     @classmethod
     def pos_tag(cls, tokens, use_mwe=True, ngrams=2):
-        item = cls(NLTKNgramTagger.id, use_mwe=use_mwe, ngrams=ngrams)
+        item = cls(id=NLTKNgramTagger.id, use_mwe=use_mwe, ngrams=ngrams)
         item.load()
         return item.tag(tokens)
 
     @classmethod
     def pos_tag_sents(cls, sentences, use_mwe=True, ngrams=2):
-        item = cls(NLTKNgramTagger.id, use_mwe=use_mwe, ngrams=ngrams)
+        item = cls(id=NLTKNgramTagger.id, use_mwe=use_mwe, ngrams=ngrams)
         item.load()
         return item.tag_sents(sentences)
 
@@ -125,6 +125,7 @@ class NLTKNgramTagger(POSTagger):
 def cess_tagger(use_mwe, ngrams):
 
     class CESSTagger(NLTKNgramTagger):
+        tagset = 'es-eagles.map'
 
         def __init__(self):
             super(CESSTagger, self).__init__(id='cess', use_mwe=use_mwe, ngrams=ngrams)
@@ -134,6 +135,8 @@ def cess_tagger(use_mwe, ngrams):
 
     return CESSTagger
 
+
+CESSTagger = cess_tagger(use_mwe=True, ngrams=2)
 
 postagger_register("CESSTagger-mwe-1grams")(cess_tagger(use_mwe=True, ngrams=1))
 postagger_register("CESSTagger-mwe-2grams")(cess_tagger(use_mwe=True, ngrams=2))

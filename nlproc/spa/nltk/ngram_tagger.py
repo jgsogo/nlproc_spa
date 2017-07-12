@@ -105,15 +105,15 @@ class NLTKNgramTagger(POSTagger):
 
     @classmethod
     def pos_tag(cls, tokens, use_mwe=True, ngrams=2):
-        item = cls(id=NLTKNgramTagger.id, use_mwe=use_mwe, ngrams=ngrams)
-        item.load()
-        return item.tag(tokens)
+        raise NotImplementedError()
 
+    """
     @classmethod
     def pos_tag_sents(cls, sentences, use_mwe=True, ngrams=2):
         item = cls(id=NLTKNgramTagger.id, use_mwe=use_mwe, ngrams=ngrams)
         item.load()
         return item.tag_sents(sentences)
+    """
 
     def tag(self, tokens):
         return self.tagger.tag(tokens)
@@ -132,6 +132,13 @@ def cess_tagger(use_mwe, ngrams):
 
         def get_tagged_sentences(self):
             return cess_esp.tagged_sents()
+
+        @classmethod
+        def pos_tag(cls, tokens, use_mwe=True, ngrams=2):
+            item_class = cess_tagger(use_mwe=use_mwe, ngrams=ngrams)
+            item = item_class()
+            item.load()
+            return item.tag(tokens)
 
     return CESSTagger
 

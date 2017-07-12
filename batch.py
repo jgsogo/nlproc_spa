@@ -56,7 +56,13 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     # Configure log
+    ch = logging.StreamHandler()
+    ch.setLevel(args.log_level)
+    formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)7s - %(message)s')
+    ch.setFormatter(formatter)
+
     root_logger = logging.getLogger()
+    root_logger.addHandler(ch)
     root_logger.setLevel(args.log_level)
 
     # Retrieve data to test against
@@ -80,7 +86,7 @@ if __name__ == '__main__':
             end = time.time()
 
             aggregated = [sum(x) for x in zip(*metrics)]
-            print(" - metrics: {} => {:.4f}% evaluated, {:.4f}% match".format(aggregated, aggregated[0]/aggregated[2], aggregated[1]/aggregated[2]))
+            print(" - metrics: {} => {:.4f}% evaluated, {:.4f}% match".format(aggregated, aggregated[0]/aggregated[2]*100, aggregated[1]/aggregated[2]*100))
             print(" - elapsed_time: {}".format(end))
 
             log.warning("Missing UniversalPOS in dataset '{}': {}".format(dataset, ', '.join(dataset.missing)))

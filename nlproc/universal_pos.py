@@ -43,7 +43,7 @@ def UniversalPOSTagger(cls):
         def tag(self, *args, **kwargs):
             r = super(UniversalPOSWrapper, self).tag(*args, **kwargs)
             for w, tag in r:
-                yield (w, self.universal_pos(tag.lower()))
+                yield (w, self.universal_pos(tag.lower()) if tag else None)
 
         def tag_sents(self, *args, **kwargs):
             r = super(UniversalPOSWrapper, self).tag_sents(*args, **kwargs)

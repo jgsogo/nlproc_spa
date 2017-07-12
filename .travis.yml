@@ -1,0 +1,8 @@
+language: python
+python:
+  - "3.4"
+install:
+- pip install nltk
+- python -m nltk.downloader cess_esp
+script:
+- python batch --pos-tagger CESSTagger-mwe --log-level DEBUG

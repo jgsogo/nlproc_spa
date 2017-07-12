@@ -1,8 +1,11 @@
 language: python
 python:
   - "3.6"
+env:
+  - TAGGER_PATTERN="CESSTagger-mwe"
+  - TAGGER_PATTERN="CESSTagger-nomwe"
 install:
 - pip install nltk
 - python -m nltk.downloader cess_esp
 script:
-- python batch.py --pos-tagger CESSTagger-mwe --log-level DEBUG
+- python batch.py --pos-tagger $TAGGER_PATTERN --log-level DEBUG

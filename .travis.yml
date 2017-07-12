@@ -2,10 +2,10 @@ language: python
 python:
   - "3.6"
 env:
-  - TAGGER_PATTERN="CESSTagger-mwe"
-  - TAGGER_PATTERN="CESSTagger-nomwe"
+  - TAGGER_PATTERN="conll2002"
+  - TAGGER_PATTERN="cess_esp"
 install:
 - pip install nltk
-- python -m nltk.downloader cess_esp
+- python -m nltk.downloader cess_esp conll2002
 script:
 - python batch.py --pos-tagger $TAGGER_PATTERN --log-level ERROR

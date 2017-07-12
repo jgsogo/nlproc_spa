@@ -1,4 +1,5 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-from .ngram_tagger import CESSTagger
+from .cess_esp_tagger import CESSTagger
+from .conll2002_tagger import Conll2002Tagger

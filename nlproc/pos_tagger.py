@@ -3,6 +3,9 @@
 
 import re
 
+import logging
+log = logging.getLogger(__name__)
+
 
 class POSTagger(object):
     _id_ = None
@@ -42,6 +45,7 @@ class POSTagger(object):
 
     @classmethod
     def register(cls, class_name):
+        log.debug("Registered tagger {}".format(class_name))
         def decorator(subclass):
             cls._classes_[class_name] = subclass
             subclass._id_ = class_name

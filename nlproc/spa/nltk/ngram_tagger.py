@@ -7,9 +7,8 @@ import logging
 import pickle
 
 from nltk import UnigramTagger, BigramTagger, TrigramTagger, NgramTagger
-from nltk.corpus import cess_esp
 
-from nlproc.pos_tagger import postagger_register, POSTagger
+from nlproc.pos_tagger import POSTagger
 
 log = logging.getLogger(__name__)
 
@@ -121,60 +120,4 @@ class NLTKNgramTagger(POSTagger):
     def tag_sents(self, sents):
         return self.tagger.tag_sents(sents)
 
-
-def cess_tagger(use_mwe, ngrams):
-
-    class CESSTagger(NLTKNgramTagger):
-        tagset = 'es-eagles.map'
-
-        def __init__(self):
-            super(CESSTagger, self).__init__(id='cess', use_mwe=use_mwe, ngrams=ngrams)
-
-        def get_tagged_sentences(self):
-            return cess_esp.tagged_sents()
-
-        @classmethod
-        def pos_tag(cls, tokens, use_mwe=True, ngrams=2):
-            item_class = cess_tagger(use_mwe=use_mwe, ngrams=ngrams)
-            item = item_class()
-            item.load(train=True)
-            return item.tag_sents(tokens)
-
-    return CESSTagger
-
-
-CESSTagger = cess_tagger(use_mwe=True, ngrams=2)
-
-postagger_register("CESSTagger-mwe-1grams")(cess_tagger(use_mwe=True, ngrams=1))
-postagger_register("CESSTagger-mwe-2grams")(cess_tagger(use_mwe=True, ngrams=2))
-postagger_register("CESSTagger-mwe-3grams")(cess_tagger(use_mwe=True, ngrams=3))
-
-postagger_register("CESSTagger-nomwe-1grams")(cess_tagger(use_mwe=False, ngrams=1))
-postagger_register("CESSTagger-nomwe-2grams")(cess_tagger(use_mwe=False, ngrams=2))
-postagger_register("CESSTagger-nomwe-3grams")(cess_tagger(use_mwe=False, ngrams=3))
-
-
-if __name__ == '__main__':
-    #formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)7s - %(message)s')
-    formatter = logging.Formatter('%(asctime)s - %(levelname)7s - %(message)s')
-    ch = logging.StreamHandler()
-    ch.setFormatter(formatter)
-    log.addHandler(ch)
-
-    ch.setLevel(logging.DEBUG)
-    log.setLevel(logging.DEBUG)
-
-    from nlproc.pos_tagger import postagger_factory
-
-    cess_mwe_2grams = postagger_factory("CESSTagger-mwe-2grams")()
-    cess_mwe_2grams.load(train=True)
-    print(cess_mwe_2grams.tag(["La", "casa", "es", "azul"]))
-
-    cess_mwe_1grams = postagger_factory("CESSTagger-mwe-1grams")()
-    cess_mwe_1grams.load(train=True)
-    print(cess_mwe_1grams.tag(["La", "casa", "es", "azul"]))
-
-    cess_mwe_3grams = postagger_factory("CESSTagger-mwe-3grams")()
-    cess_mwe_3grams.load(train=True)
-    print(cess_mwe_3grams.tag(["La", "casa", "es", "azul"]))
 

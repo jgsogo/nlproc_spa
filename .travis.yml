@@ -8,4 +8,4 @@ install:
 - pip install nltk
 - python -m nltk.downloader cess_esp
 script:
-- python batch.py --pos-tagger $TAGGER_PATTERN --log-level DEBUG
+- python batch.py --pos-tagger $TAGGER_PATTERN --log-level ERROR

@@ -11,13 +11,13 @@ log = logging.getLogger(__name__)
 
 
 CONLL2002 = 'conll2002'
-FILEIDS =['esp.testa', 'esp.testb']
+FILEIDS =['esp.train',]
 
 
 def conll2002_tagger(use_mwe, ngrams):
 
     class Conll2002Tagger(NLTKNgramTagger):
-        tagset = 'es-eagles.map'
+        tagset = 'es-eagles'
 
         def __init__(self):
             super(Conll2002Tagger, self).__init__(id=CONLL2002, use_mwe=use_mwe, ngrams=ngrams)

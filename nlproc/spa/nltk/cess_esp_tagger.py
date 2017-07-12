@@ -16,7 +16,7 @@ CESS_ESP = 'cess_esp'
 def cess_tagger(use_mwe, ngrams):
 
     class CESSTagger(NLTKNgramTagger):
-        tagset = 'es-eagles.map'
+        tagset = 'wsj'
 
         def __init__(self):
             super(CESSTagger, self).__init__(id=CESS_ESP, use_mwe=use_mwe, ngrams=ngrams)

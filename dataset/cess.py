@@ -6,7 +6,7 @@ from dataset.base_dataset import Dataset
 
 @Dataset.register('cess_esp')
 class CESSDataset(Dataset):
-    tagset = 'es-eagles.map'
+    tagset = 'es-eagles'
 
     @property
     def tagged_sents(self):

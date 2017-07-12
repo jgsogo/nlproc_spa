@@ -1,20 +1,10 @@
 # -*- coding: utf-8 -*-
 
 import os
+from nltk.tag import tagset_mapping
+
 import logging
-
 log = logging.getLogger(__name__)
-
-me = os.path.abspath(os.path.dirname(__file__))
-
-
-def load(map_file):
-    data = {}
-    with open(os.path.join(me, "..", "universal_pos_tags", map_file), 'r') as f:
-        for line in f:
-            i, o = line.split()
-            data[i.lower()] = o
-    return data
 
 
 class UniversalPOSMixin(object):
@@ -22,7 +12,7 @@ class UniversalPOSMixin(object):
 
     def __init__(self, tagset, *args, **kwargs):
         super(UniversalPOSMixin, self).__init__(*args, **kwargs)
-        self.mapping = load(tagset)
+        self.mapping = tagset_mapping(tagset, 'universal')
 
     def universal_pos(self, tag):
         try:

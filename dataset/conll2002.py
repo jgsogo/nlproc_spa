@@ -6,7 +6,7 @@ from dataset.base_dataset import Dataset
 
 @Dataset.register('conll2002')
 class Conll2002Dataset(Dataset):
-    tagset = 'es-eagles.map'
+    tagset = 'es-eagles'
 
     @property
     def tagged_sents(self):
@@ -16,3 +16,4 @@ class Conll2002Dataset(Dataset):
 
     def get_tagged_sentences(self):
         return conll2002.tagged_sents(fileids=['esp.testa', 'esp.testb'])
+

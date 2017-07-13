@@ -1,18 +1,15 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-from nltk.corpus import conll2002
-
 from nlproc.pos_tagger import postagger_register
 from .ngram_tagger import NLTKNgramTagger
+from dataset.conll2002 import Conll2002Dataset
 
 import logging
 log = logging.getLogger(__name__)
 
 
 CONLL2002 = 'conll2002'
-FILEIDS =['esp.train',]
-
 
 def conll2002_tagger(use_mwe, ngrams):
 
@@ -23,7 +20,7 @@ def conll2002_tagger(use_mwe, ngrams):
             super(Conll2002Tagger, self).__init__(id=CONLL2002, use_mwe=use_mwe, ngrams=ngrams)
 
         def get_tagged_sentences(self):
-            return conll2002.tagged_sents(fileids=FILEIDS)
+            return Conll2002Dataset.get_tagged_sentences()
 
         @classmethod
         def pos_tag(cls, tokens, use_mwe=True, ngrams=2):

@@ -1,12 +1,11 @@
 # -*- coding: utf-8 -*-
 
-from nltk.corpus import cess_esp
+from nltk.corpus import universal_treebanks
 from dataset.base_dataset import Dataset
 
-
-@Dataset.register('cess_esp')
-class CESSDataset(Dataset):
-    tagset = 'es-eagles'
+@Dataset.register('universal_treebanks')
+class UniversalTreebanksDataset(Dataset):
+    tagset = 'universal'
 
     @property
     def tagged_sents(self):
@@ -16,4 +15,5 @@ class CESSDataset(Dataset):
 
     @classmethod
     def get_tagged_sentences(cls):
-        return cess_esp.tagged_sents()
+        return universal_treebanks.tagged_sents(fileids=['std/es/es-universal-train.conll',])
+

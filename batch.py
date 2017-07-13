@@ -89,6 +89,9 @@ if __name__ == '__main__':
             print(" - metrics: {} => {:.4f}% evaluated, {:.4f}% match".format(aggregated, aggregated[0]/aggregated[2]*100, aggregated[1]/aggregated[2]*100))
             print(" - elapsed_time: {}".format(end))
 
-            log.warning("Missing UniversalPOS in dataset '{}': {}".format(dataset, ', '.join(dataset.missing)))
-        log.warning("Missing UniversalPOS in tagger '{}': {}".format(tagger, ', '.join(tagger.missing)))
+            if dataset.missing:
+                log.warning("Missing UniversalPOS in dataset '{}': {}".format(dataset, ', '.join(dataset.missing)))
+
+        if tagger.missing:
+            log.warning("Missing UniversalPOS in tagger '{}': {}".format(tagger, ', '.join(tagger.missing)))
 

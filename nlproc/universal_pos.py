@@ -12,11 +12,14 @@ class UniversalPOSMixin(object):
 
     def __init__(self, tagset, *args, **kwargs):
         super(UniversalPOSMixin, self).__init__(*args, **kwargs)
-        self.mapping = tagset_mapping(tagset, 'universal')
+        if tagset != 'universal':
+            self.mapping = tagset_mapping(tagset, 'universal')
+        else:
+            self.mapping = None
 
     def universal_pos(self, tag):
         try:
-            return self.mapping[tag]
+            return self.mapping[tag] if self.mapping else tag
         except KeyError as e:
             self.missing.add(tag)
             # log.error("Tag {!r} not found in UniversalPOS mapping for {!r}".format(tag, self.tagset))

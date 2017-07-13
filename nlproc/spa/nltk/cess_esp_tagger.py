@@ -1,10 +1,9 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-from nltk.corpus import cess_esp
-
 from nlproc.pos_tagger import postagger_register
 from .ngram_tagger import NLTKNgramTagger
+from dataset.cess import CESSDataset
 
 import logging
 log = logging.getLogger(__name__)
@@ -16,13 +15,13 @@ CESS_ESP = 'cess_esp'
 def cess_tagger(use_mwe, ngrams):
 
     class CESSTagger(NLTKNgramTagger):
-        tagset = 'wsj'
+        tagset = 'es-eagles'
 
         def __init__(self):
             super(CESSTagger, self).__init__(id=CESS_ESP, use_mwe=use_mwe, ngrams=ngrams)
 
         def get_tagged_sentences(self):
-            return cess_esp.tagged_sents()
+            return CESSDataset.get_tagged_sentences()
 
         @classmethod
         def pos_tag(cls, tokens, use_mwe=True, ngrams=2):

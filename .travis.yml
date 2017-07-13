@@ -6,6 +6,6 @@ env:
   - TAGGER_PATTERN="cess_esp"
 install:
 - pip install nltk
-- python -m nltk.downloader universal_tagset cess_esp conll2002
+- python -m nltk.downloader universal_tagset cess_esp conll2002 universal_treebanks_v20
 script:
 - python batch.py --pos-tagger $TAGGER_PATTERN --log-level ERROR
